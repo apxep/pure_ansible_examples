@@ -17,8 +17,6 @@
           - network
       register: array_info
 
-    - debug: msg="{{ array_info.purefa_info.network['vir1'].address | string | length }}"
-
     - set_fact:
         my_interfaces: []
 
