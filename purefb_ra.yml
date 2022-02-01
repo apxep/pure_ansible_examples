@@ -1,0 +1,39 @@
+---
+- name:  enable or disable Remote Assist
+  gather_facts: no
+  become: no
+  hosts: localhost
+
+  collections:
+    - purestorage.flashblade
+
+  tasks:
+    - name: get FlashBlade info
+      local_action:
+        module: purestorage.flashblade.purefb_info
+        fb_url: "{{ my_fb_url }}"
+        api_token: "{{ my_api_token }}"
+        gather_subset:
+          - network
+      register: array_info
+
+    - set_fact:
+        my_interfaces: []
+
+    - set_fact:
+        my_interfaces: "{{ my_interfaces + [item.value.address] }}"
+      with_dict: "{{ array_info.purefb_info.network }}"
+      when: ( item.value.address != None ) and ( item.value.services | length > 0 ) and ( item.value.services[0] == 'management' )
+      no_log: true
+
+    - name: info
+      debug: var=my_interfaces
+
+    - name: Set FlashBlade RemoteAssist
+      local_action:
+        module: purestorage.flashblade.purefb_ra
+        fb_url: "{{ item }}"
+        api_token: "{{ my_api_token }}"
+        state: "{{ state |default('absent') }}"
+      register: fb_ra
+      with_items: "{{ my_interfaces }}"
