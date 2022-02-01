@@ -24,7 +24,7 @@
         my_interfaces: "{{ my_interfaces + [item.value.address] }}"
       with_dict: "{{ array_info.purefa_info.network }}"
       when: ( item.value.address != None ) and ( item.value.services | length > 0 ) and ( item.value.services[0] == 'management' )
-#      no_log: true
+      no_log: true
 
     - name: info
       debug: var=my_interfaces
